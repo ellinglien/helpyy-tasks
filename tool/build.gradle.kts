@@ -75,7 +75,19 @@ kotlin {
 
 dependencies {
     implementation(project(":sdk:client"))
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.androidx.datastore.preferences)
+
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     ksp(libs.androidx.room.compiler)
 }
 
