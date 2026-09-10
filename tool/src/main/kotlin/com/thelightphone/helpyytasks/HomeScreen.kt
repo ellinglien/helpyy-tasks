@@ -104,17 +104,23 @@ class HomeViewModel(private val repo: BoardRepository) : LightViewModel<Unit>() 
         _armed.value = null
     }
 
-    /** First tap on a control arms it; the second tap on the same one commits. */
+    /**
+     * Complete commits on the first tap — a task finished by mistake is one tap
+     * back from the Done list, so the arm was guarding nothing.
+     *
+     * Park still arms: the first tap arms it, the second one on the same control
+     * commits.
+     */
     fun tapControl(taskId: String, control: Control) {
+        if (control == Control.Complete) {
+            _armed.value = null
+            viewModelScope.launch { repo.complete(taskId) }
+            return
+        }
         val current = _armed.value
         if (current != null && current.taskId == taskId && current.control == control) {
             _armed.value = null
-            viewModelScope.launch {
-                when (control) {
-                    Control.Park -> repo.setParked(taskId, true)
-                    Control.Complete -> repo.complete(taskId)
-                }
-            }
+            viewModelScope.launch { repo.setParked(taskId, true) }
         } else {
             _armed.value = Armed(taskId, control)
         }
@@ -306,7 +312,8 @@ private fun TaskRow(
         )
         DrawnControl(
             kind = ControlKind.Complete,
-            armed = armed?.taskId == task.id && armed.control == Control.Complete,
+            // Complete commits on the first tap, so the box never shows armed.
+            armed = false,
             enabled = controlsEnabled,
             contentDescription = "Complete",
             onClick = { onTapControl(Control.Complete) },
