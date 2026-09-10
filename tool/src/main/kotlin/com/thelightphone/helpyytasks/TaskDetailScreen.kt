@@ -93,7 +93,7 @@ class TaskDetailScreen(
                         icon = LightIcons.BACK,
                         onClick = { goBack() },
                     ),
-                    center = LightTopBarCenter.Text("Task"),
+                    center = LightTopBarCenter.Text("TASK"),
                 )
 
                 val detail = state.detail

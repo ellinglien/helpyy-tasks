@@ -91,7 +91,7 @@ class MoveScreen(
                         icon = LightIcons.BACK,
                         onClick = { goBack() },
                     ),
-                    center = LightTopBarCenter.Text("Move"),
+                    center = LightTopBarCenter.Text("MOVE"),
                 )
                 LightScrollView(
                     modifier = Modifier

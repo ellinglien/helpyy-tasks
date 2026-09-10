@@ -161,7 +161,7 @@ class SettingsScreen(sealedActivity: SealedLightActivity) :
                                 icon = LightIcons.BACK,
                                 onClick = { goBack() },
                             ),
-                            center = LightTopBarCenter.Text("Settings"),
+                            center = LightTopBarCenter.Text("SETTINGS"),
                         )
 
                         Column(

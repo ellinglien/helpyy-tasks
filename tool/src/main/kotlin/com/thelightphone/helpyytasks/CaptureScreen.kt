@@ -86,7 +86,7 @@ class CaptureScreen(sealedActivity: SealedLightActivity) :
                 is CaptureStep.Title -> {
                     val fieldState = remember { TextFieldState("") }
                     LightTextInputEditor(
-                        title = "New task",
+                        title = "NEW TASK",
                         state = fieldState,
                         onSubmit = { viewModel.submitTitle(it.toString()) },
                         onBack = { goBack() },

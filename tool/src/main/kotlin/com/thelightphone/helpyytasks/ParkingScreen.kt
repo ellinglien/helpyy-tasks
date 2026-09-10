@@ -99,7 +99,7 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
                         icon = LightIcons.BACK,
                         onClick = { goBack() },
                     ),
-                    center = LightTopBarCenter.Text("Parking lot"),
+                    center = LightTopBarCenter.Text("PARKING LOT"),
                 )
                 ParkedCountLine(count = boardState.parked.size)
 

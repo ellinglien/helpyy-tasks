@@ -248,7 +248,7 @@ private fun HomeHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LightText(
-            text = "Tasks",
+            text = "TASKS",
             variant = LightTextVariant.Subheading,
             modifier = Modifier.weight(1f),
         )
