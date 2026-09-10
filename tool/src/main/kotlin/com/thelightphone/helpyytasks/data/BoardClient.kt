@@ -45,6 +45,10 @@ class BoardClient(
         request { http.get("${baseUrl()}/api/phone/tasks?parked=1") { auth() } }
             .body<TaskListResponse>().tasks
 
+    override suspend fun listDone(): List<PhoneTask> =
+        request { http.get("${baseUrl()}/api/phone/tasks?done=1") { auth() } }
+            .body<TaskListResponse>().tasks
+
     override suspend fun detail(id: String): PhoneTaskDetail =
         request { http.get("${baseUrl()}/api/phone/tasks/$id") { auth() } }.body()
 

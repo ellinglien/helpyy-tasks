@@ -63,6 +63,7 @@ sealed class BoardError(message: String) : Exception(message) {
 interface BoardSource {
     suspend fun list(): List<PhoneTask>
     suspend fun listParked(): List<PhoneTask>
+    suspend fun listDone(): List<PhoneTask>
     suspend fun detail(id: String): PhoneTaskDetail
     suspend fun move(id: String, column: String): PhoneTaskDetail
     suspend fun setParked(id: String, parked: Boolean): PhoneTaskDetail

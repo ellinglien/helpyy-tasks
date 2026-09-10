@@ -19,19 +19,22 @@ private fun detail(id: String, column: String = "go", parked: Boolean = false) =
 private class FakeSource(
     var active: List<PhoneTask> = emptyList(),
     var parked: List<PhoneTask> = emptyList(),
+    var done: List<PhoneTask> = emptyList(),
     var failWith: BoardError? = null,
 ) : BoardSource {
     var listCalls = 0
     val completed = mutableListOf<String>()
     val parkedCalls = mutableListOf<Pair<String, Boolean>>()
+    val moveCalls = mutableListOf<Pair<String, String>>()
 
     private fun boom() { failWith?.let { throw it } }
 
     override suspend fun list(): List<PhoneTask> { listCalls++; boom(); return active }
     override suspend fun listParked(): List<PhoneTask> { boom(); return parked }
+    override suspend fun listDone(): List<PhoneTask> { boom(); return done }
     override suspend fun detail(id: String): PhoneTaskDetail { boom(); return detail(id) }
     override suspend fun move(id: String, column: String): PhoneTaskDetail {
-        boom(); active = active.filterNot { it.id == id }; return detail(id, column)
+        boom(); moveCalls += id to column; active = active.filterNot { it.id == id }; return detail(id, column)
     }
     override suspend fun setParked(id: String, parked: Boolean): PhoneTaskDetail {
         boom(); parkedCalls += id to parked; active = active.filterNot { it.id == id }
@@ -161,5 +164,49 @@ class BoardRepositoryTest {
         repo.refresh()
         repo.capture("ring the venue", "go", false)
         assertTrue(repo.state.value.tasks.map { it.title }.contains("ring the venue"))
+    }
+
+    @Test
+    fun `refreshDone populates done without disturbing tasks`() = runTest {
+        val source = FakeSource(
+            active = listOf(task("a", "one")),
+            done = listOf(task("d", "done thing", "done")),
+        )
+        val repo = BoardRepository(source)
+        repo.refresh()
+        repo.refreshDone()
+        assertEquals(listOf("one"), repo.state.value.tasks.map { it.title })
+        assertEquals(listOf("done thing"), repo.state.value.done.map { it.title })
+    }
+
+    @Test
+    fun `restore removes the task from done immediately and calls move`() = runTest {
+        val source = FakeSource(done = listOf(task("d", "done thing", "done")))
+        val repo = BoardRepository(source)
+        repo.refreshDone()
+        repo.restore("d")
+        assertEquals(emptyList(), repo.state.value.done)
+        assertEquals(listOf("d" to "go"), source.moveCalls)
+    }
+
+    @Test
+    fun `a failed restore puts it back and marks stale`() = runTest {
+        val source = FakeSource(done = listOf(task("d", "done thing", "done")))
+        val repo = BoardRepository(source)
+        repo.refreshDone()
+        source.failWith = BoardError.Offline(null)
+        repo.restore("d")
+        assertEquals(listOf("done thing"), repo.state.value.done.map { it.title })
+        assertTrue(repo.state.value.stale)
+    }
+
+    @Test
+    fun `restore on a task the server lost still removes it locally`() = runTest {
+        val source = FakeSource(done = listOf(task("d", "done thing", "done")))
+        val repo = BoardRepository(source)
+        repo.refreshDone()
+        source.failWith = BoardError.NotFound
+        repo.restore("d")
+        assertEquals(emptyList(), repo.state.value.done)
     }
 }

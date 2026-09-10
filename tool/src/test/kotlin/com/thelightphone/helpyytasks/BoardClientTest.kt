@@ -62,6 +62,13 @@ class BoardClientTest {
     }
 
     @Test
+    fun `listDone asks for completed tasks`() = runTest {
+        val rec = Recorder()
+        client(HttpStatusCode.OK, listBody, rec).listDone()
+        assertEquals("/api/phone/tasks?done=1", rec.calls.single().second)
+    }
+
+    @Test
     fun `detail parses the wide shape`() = runTest {
         val body = """
             {"id":"a","title":"report","column":"asap","labels":[],
