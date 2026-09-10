@@ -1,6 +1,17 @@
 package com.thelightphone.helpyytasks
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -215,7 +226,7 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
 private const val HEADER_ICON_UNITS = 2f
 
 // Reused by ParkingScreen, whose rows are styled identically to Home's.
-internal const val CONTROL_BOX_UNITS = 2.5f
+internal const val CONTROL_BOX_UNITS = 2f
 internal const val CONTROL_GLYPH_UNITS = 1.4f
 
 @Composable
@@ -235,20 +246,12 @@ private fun HomeHeader(
             variant = LightTextVariant.Subheading,
             modifier = Modifier.weight(1f),
         )
-        LightIcon(
-            icon = LightIcons.ADD,
-            size = HEADER_ICON_UNITS,
-            contentDescription = "Add task",
+        PlusIcon(
             modifier = Modifier
                 .lightClickable(onClick = onAdd)
                 .padding(end = 1f.gridUnitsAsDp()),
         )
-        // No parking-lot (car) icon exists in LightIcons — LIST is the nearest
-        // sensible stand-in for "browse the set-aside tasks".
-        LightIcon(
-            icon = LightIcons.LIST,
-            size = HEADER_ICON_UNITS,
-            contentDescription = "Parking lot",
+        ParkingIcon(
             modifier = Modifier
                 .lightClickable(onClick = onParkingLot)
                 .padding(end = 1f.gridUnitsAsDp()),
@@ -304,16 +307,16 @@ private fun TaskRow(
             }
         }
 
-        ControlIcon(
-            icon = LightIcons.DOWN,
+        DrawnControl(
+            kind = ControlKind.ParkDown,
             armed = armed?.taskId == task.id && armed.control == Control.Park,
             enabled = controlsEnabled,
             contentDescription = "Park",
             onClick = { onTapControl(Control.Park) },
-            modifier = Modifier.padding(end = 0.5f.gridUnitsAsDp()),
+            modifier = Modifier.padding(start = 1.5f.gridUnitsAsDp(), end = 1.25f.gridUnitsAsDp()),
         )
-        ControlIcon(
-            icon = LightIcons.ACCEPT,
+        DrawnControl(
+            kind = ControlKind.Complete,
             armed = armed?.taskId == task.id && armed.control == Control.Complete,
             enabled = controlsEnabled,
             contentDescription = "Complete",
@@ -407,5 +410,134 @@ internal fun CenteredMessage(text: String) {
             variant = LightTextVariant.Copy,
             align = TextAlign.Center,
         )
+    }
+}
+
+/**
+ * The international parking symbol: a P in a box. LightIcons ships no car or
+ * parking glyph, and a list icon read as "a bunch of lines" on the device.
+ * Drawn rather than shipped as a drawable so it takes the theme's content
+ * colour and the LP3's own typeface without new resource plumbing.
+ */
+@Composable
+internal fun ParkingIcon(modifier: Modifier = Modifier) {
+    val colors = LightThemeTokens.colors
+    Box(
+        modifier = modifier.size(HEADER_ICON_UNITS.gridUnitsAsDp()),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .border(width = 2.dp, color = colors.content),
+        )
+        LightText(
+            text = "P",
+            variant = LightTextVariant.Detail,
+        )
+    }
+}
+
+/**
+ * The row controls, drawn rather than taken from LightIcons.
+ *
+ * LightIcons has no empty checkbox and no thin caret: DOWN renders as a filled
+ * triangle and ACCEPT as a bare checkmark, which read as neither a checkbox nor
+ * a caret on the device. These are stroked to match the design: an empty square
+ * for complete, a chevron for park. Armed inverts — the square fills with
+ * `content` and the glyph is drawn in `background`.
+ */
+@Composable
+internal fun DrawnControl(
+    kind: ControlKind,
+    armed: Boolean,
+    enabled: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LightThemeTokens.colors
+    val line = if (enabled) colors.content else colors.contentSecondary
+    val glyph = if (armed) colors.background else line
+    val box = CONTROL_BOX_UNITS.gridUnitsAsDp()
+
+    Canvas(
+        modifier = modifier
+            .size(box)
+            .lightClickable(enabled = enabled, onClick = onClick)
+            .semantics { this.contentDescription = contentDescription },
+    ) {
+        // The glyph is drawn inside an inset so the shape reads smaller than the
+        // tap target it sits in — 52dp of finger, a lighter mark on screen.
+        val inset = size.width * 0.10f
+        val w = size.width - inset * 2
+        val h = size.height - inset * 2
+        val stroke = w * 0.085f
+
+        when (kind) {
+            ControlKind.Complete -> {
+                if (armed) {
+                    drawRect(color = line, topLeft = Offset(inset, inset), size = Size(w, h))
+                    // Checkmark, only once armed — an empty box is the resting state.
+                    val path = Path().apply {
+                        moveTo(inset + w * 0.24f, inset + h * 0.52f)
+                        lineTo(inset + w * 0.43f, inset + h * 0.72f)
+                        lineTo(inset + w * 0.78f, inset + h * 0.28f)
+                    }
+                    drawPath(
+                        path = path,
+                        color = glyph,
+                        style = Stroke(width = stroke * 1.4f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+                    )
+                } else {
+                    drawRect(color = line, topLeft = Offset(inset, inset), size = Size(w, h), style = Stroke(width = stroke))
+                }
+            }
+
+            ControlKind.ParkDown, ControlKind.PullUp -> {
+                if (armed) drawRect(color = line, topLeft = Offset(inset, inset), size = Size(w, h))
+                val down = kind == ControlKind.ParkDown
+                val path = Path().apply {
+                    if (down) {
+                        moveTo(inset + w * 0.20f, inset + h * 0.38f)
+                        lineTo(inset + w * 0.50f, inset + h * 0.66f)
+                        lineTo(inset + w * 0.80f, inset + h * 0.38f)
+                    } else {
+                        moveTo(inset + w * 0.20f, inset + h * 0.62f)
+                        lineTo(inset + w * 0.50f, inset + h * 0.34f)
+                        lineTo(inset + w * 0.80f, inset + h * 0.62f)
+                    }
+                }
+                drawPath(
+                    path = path,
+                    color = glyph,
+                    style = Stroke(width = stroke * 1.6f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+                )
+            }
+        }
+    }
+}
+
+internal enum class ControlKind { Complete, ParkDown, PullUp }
+
+/**
+ * A bare plus. The only add glyph LightIcons ships (ic_add_white) is a plus
+ * inside a circle, which sits heavier in the header than the gear and the
+ * parking box beside it.
+ */
+@Composable
+internal fun PlusIcon(modifier: Modifier = Modifier) {
+    val colors = LightThemeTokens.colors
+    Canvas(
+        modifier = modifier
+            .size(HEADER_ICON_UNITS.gridUnitsAsDp())
+            .semantics { contentDescription = "Add task" },
+    ) {
+        val stroke = size.width * 0.085f
+        val arm = size.width * 0.34f
+        val cx = size.width / 2
+        val cy = size.height / 2
+        drawLine(colors.content, Offset(cx - arm, cy), Offset(cx + arm, cy), stroke, StrokeCap.Round)
+        drawLine(colors.content, Offset(cx, cy - arm), Offset(cx, cy + arm), stroke, StrokeCap.Round)
     }
 }

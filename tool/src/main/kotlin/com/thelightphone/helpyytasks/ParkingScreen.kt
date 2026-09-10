@@ -177,8 +177,8 @@ private fun ParkedRow(
 
         // Caret-up only, no checkbox: you do not complete things you have
         // parked, only decide to bring them back into active work.
-        ControlIcon(
-            icon = LightIcons.UP,
+        DrawnControl(
+            kind = ControlKind.PullUp,
             armed = armed,
             enabled = controlsEnabled,
             contentDescription = "Pull back",
