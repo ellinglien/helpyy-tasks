@@ -34,31 +34,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ParkingViewModel(private val repo: BoardRepository) : LightViewModel<Unit>() {
+class DoneViewModel(private val repo: BoardRepository) : LightViewModel<Unit>() {
 
     val boardState: StateFlow<BoardState> = repo.state
 
-    // Only one control exists per row here (the pull-back caret), so armed
-    // state is just the id of the row, not a (id, control) pair like Home's.
+    // Only one control per row here (the restore caret), so armed state is
+    // just the id of the row -- same shape as ParkingViewModel's.
     private val _armed = MutableStateFlow<String?>(null)
     val armed: StateFlow<String?> = _armed.asStateFlow()
 
     override fun onScreenShow(screen: SimpleLightScreen<Unit>) {
         super.onScreenShow(screen)
-        viewModelScope.launch { repo.refreshParked() }
+        viewModelScope.launch { repo.refreshDone() }
     }
 
     override fun onScreenHide(screen: SimpleLightScreen<Unit>) {
         super.onScreenHide(screen)
-        // An armed control must never survive out of view, same as Home.
+        // An armed control must never survive out of view, same as Home/Parking.
         _armed.value = null
     }
 
-    /** First tap arms the row's caret; the second tap pulls it back. */
+    /** First tap arms the row's caret; the second tap restores it to active. */
     fun tap(taskId: String) {
         if (_armed.value == taskId) {
             _armed.value = null
-            viewModelScope.launch { repo.setParked(taskId, false) }
+            viewModelScope.launch { repo.restore(taskId) }
         } else {
             _armed.value = taskId
         }
@@ -69,14 +69,14 @@ class ParkingViewModel(private val repo: BoardRepository) : LightViewModel<Unit>
     }
 }
 
-class ParkingScreen(sealedActivity: SealedLightActivity) :
-    LightScreen<Unit, ParkingViewModel>(sealedActivity) {
+class DoneScreen(sealedActivity: SealedLightActivity) :
+    LightScreen<Unit, DoneViewModel>(sealedActivity) {
 
-    override val viewModelClass: Class<ParkingViewModel>
-        get() = ParkingViewModel::class.java
+    override val viewModelClass: Class<DoneViewModel>
+        get() = DoneViewModel::class.java
 
-    override fun createViewModel(): ParkingViewModel =
-        ParkingViewModel(ToolGraph.repository(lightContext))
+    override fun createViewModel(): DoneViewModel =
+        DoneViewModel(ToolGraph.repository(lightContext))
 
     @Composable
     override fun Content() {
@@ -91,17 +91,17 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
                     .background(LightThemeTokens.colors.background),
             ) {
                 ScreenHeader(
-                    title = "PARKING LOT",
+                    title = "DONE",
                     onBack = { goBack() },
                     onAdd = { navigateTo(::CaptureScreen) },
                 )
-                ParkedCountLine(count = boardState.parked.size)
+                DoneCountLine(count = boardState.done.size)
 
                 if (boardState.error is BoardError.Unauthorized) {
                     CenteredMessage("Token rejected. Re-enter it in Settings.")
-                } else if (boardState.parked.isEmpty()) {
+                } else if (boardState.done.isEmpty()) {
                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        CenteredMessage("Nothing parked.")
+                        CenteredMessage("Nothing completed yet.")
                     }
                 } else {
                     LightScrollView(
@@ -110,8 +110,8 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
                             .fillMaxWidth()
                             .padding(start = 1f.gridUnitsAsDp()),
                     ) {
-                        boardState.parked.forEach { task ->
-                            ParkedRow(
+                        boardState.done.forEach { task ->
+                            DoneRow(
                                 task = task,
                                 armed = armed == task.id,
                                 controlsEnabled = !boardState.stale,
@@ -127,9 +127,9 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
 }
 
 @Composable
-private fun ParkedCountLine(count: Int) {
+private fun DoneCountLine(count: Int) {
     LightText(
-        text = "$count PARKED",
+        text = "$count RECENTLY DONE",
         variant = LightTextVariant.Superfine,
         lighten = true,
         modifier = Modifier.padding(
@@ -142,7 +142,7 @@ private fun ParkedCountLine(count: Int) {
 }
 
 @Composable
-private fun ParkedRow(
+private fun DoneRow(
     task: PhoneTask,
     armed: Boolean,
     controlsEnabled: Boolean,
@@ -169,13 +169,14 @@ private fun ParkedRow(
             }
         }
 
-        // Caret-up only, no checkbox: you do not complete things you have
-        // parked, only decide to bring them back into active work.
+        // Caret-up only, restoring a done task back to `go` -- same control as
+        // ParkingScreen's pull-back, same reasoning: nothing else to do with a
+        // finished row here except decide to bring it back.
         DrawnControl(
             kind = ControlKind.PullUp,
             armed = armed,
             enabled = controlsEnabled,
-            contentDescription = "Pull back",
+            contentDescription = "Restore",
             onClick = onTapControl,
         )
     }

@@ -13,6 +13,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import io.ktor.serialization.ContentConvertException
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import java.io.IOException
@@ -38,19 +39,20 @@ class BoardClient(
     }
 
     override suspend fun list(): List<PhoneTask> =
-        request { http.get("${baseUrl()}/api/phone/tasks") { auth() } }
-            .body<TaskListResponse>().tasks
+        parseBody<TaskListResponse>(request { http.get("${baseUrl()}/api/phone/tasks") { auth() } }).tasks
 
     override suspend fun listParked(): List<PhoneTask> =
-        request { http.get("${baseUrl()}/api/phone/tasks?parked=1") { auth() } }
-            .body<TaskListResponse>().tasks
+        parseBody<TaskListResponse>(
+            request { http.get("${baseUrl()}/api/phone/tasks?parked=1") { auth() } },
+        ).tasks
 
     override suspend fun listDone(): List<PhoneTask> =
-        request { http.get("${baseUrl()}/api/phone/tasks?done=1") { auth() } }
-            .body<TaskListResponse>().tasks
+        parseBody<TaskListResponse>(
+            request { http.get("${baseUrl()}/api/phone/tasks?done=1") { auth() } },
+        ).tasks
 
     override suspend fun detail(id: String): PhoneTaskDetail =
-        request { http.get("${baseUrl()}/api/phone/tasks/$id") { auth() } }.body()
+        parseBody(request { http.get("${baseUrl()}/api/phone/tasks/$id") { auth() } })
 
     override suspend fun move(id: String, column: String): PhoneTaskDetail =
         patchTask(id, PatchTaskRequest(column = column))
@@ -59,25 +61,43 @@ class BoardClient(
         patchTask(id, PatchTaskRequest(parked = parked))
 
     override suspend fun create(title: String, column: String, parked: Boolean): PhoneTaskDetail =
-        request {
-            http.post("${baseUrl()}/api/phone/tasks") {
-                auth()
-                contentType(ContentType.Application.Json)
-                setBody(CreateTaskRequest(title, column, parked))
-            }
-        }.body()
+        parseBody(
+            request {
+                http.post("${baseUrl()}/api/phone/tasks") {
+                    auth()
+                    contentType(ContentType.Application.Json)
+                    setBody(CreateTaskRequest(title, column, parked))
+                }
+            },
+        )
 
     override suspend fun complete(id: String): PhoneTaskDetail =
-        request { http.post("${baseUrl()}/api/phone/tasks/$id/complete") { auth() } }.body()
+        parseBody(request { http.post("${baseUrl()}/api/phone/tasks/$id/complete") { auth() } })
 
     private suspend fun patchTask(id: String, patch: PatchTaskRequest): PhoneTaskDetail =
-        request {
-            http.patch("${baseUrl()}/api/phone/tasks/$id") {
-                auth()
-                contentType(ContentType.Application.Json)
-                setBody(patch)
-            }
-        }.body()
+        parseBody(
+            request {
+                http.patch("${baseUrl()}/api/phone/tasks/$id") {
+                    auth()
+                    contentType(ContentType.Application.Json)
+                    setBody(patch)
+                }
+            },
+        )
+
+    /**
+     * Decodes the response body, mapping a shape the server sends that this
+     * client's models do not expect (a wrong field type, an unforeseen
+     * variant) onto BoardError.Server rather than letting the deserialiser's
+     * exception escape uncaught and take the whole tool down. A malformed
+     * response is a server-side problem the same way a 5xx is.
+     */
+    private suspend inline fun <reified T> parseBody(response: HttpResponse): T =
+        try {
+            response.body()
+        } catch (e: ContentConvertException) {
+            throw BoardError.Server(response.status.value)
+        }
 
     private suspend fun io.ktor.client.request.HttpRequestBuilder.auth() {
         header(HttpHeaders.Authorization, "Bearer ${token()}")

@@ -19,8 +19,6 @@ import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.SimpleLightScreen
 import com.thelightphone.sdk.rememberKeyboardOptions
-import com.thelightphone.sdk.ui.LightBarButton
-import com.thelightphone.sdk.ui.LightIcons
 import com.thelightphone.sdk.ui.LightText
 import com.thelightphone.sdk.ui.LightTextField
 import com.thelightphone.sdk.ui.LightTextInputEditor
@@ -28,8 +26,6 @@ import com.thelightphone.sdk.ui.LightTextVariant
 import com.thelightphone.sdk.ui.LightTheme
 import com.thelightphone.sdk.ui.LightThemeController
 import com.thelightphone.sdk.ui.LightThemeTokens
-import com.thelightphone.sdk.ui.LightTopBar
-import com.thelightphone.sdk.ui.LightTopBarCenter
 import com.thelightphone.sdk.ui.gridUnitsAsDp
 import com.thelightphone.sdk.ui.lightClickable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,12 +152,10 @@ class SettingsScreen(sealedActivity: SealedLightActivity) :
                             .fillMaxSize()
                             .background(LightThemeTokens.colors.background),
                     ) {
-                        LightTopBar(
-                            leftButton = LightBarButton.LightIcon(
-                                icon = LightIcons.BACK,
-                                onClick = { goBack() },
-                            ),
-                            center = LightTopBarCenter.Text("SETTINGS"),
+                        ScreenHeader(
+                            title = "SETTINGS",
+                            onBack = { goBack() },
+                            onAdd = { navigateTo(::CaptureScreen) },
                         )
 
                         Column(

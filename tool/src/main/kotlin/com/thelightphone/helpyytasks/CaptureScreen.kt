@@ -17,15 +17,11 @@ import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.rememberKeyboardOptions
-import com.thelightphone.sdk.ui.LightBarButton
-import com.thelightphone.sdk.ui.LightIcons
 import com.thelightphone.sdk.ui.LightScrollView
 import com.thelightphone.sdk.ui.LightTextInputEditor
 import com.thelightphone.sdk.ui.LightTheme
 import com.thelightphone.sdk.ui.LightThemeController
 import com.thelightphone.sdk.ui.LightThemeTokens
-import com.thelightphone.sdk.ui.LightTopBar
-import com.thelightphone.sdk.ui.LightTopBarCenter
 import com.thelightphone.sdk.ui.gridUnitsAsDp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -105,12 +101,15 @@ class CaptureScreen(sealedActivity: SealedLightActivity) :
                             .fillMaxSize()
                             .background(LightThemeTokens.colors.background),
                     ) {
-                        LightTopBar(
-                            leftButton = LightBarButton.LightIcon(
-                                icon = LightIcons.BACK,
-                                onClick = { goBack() },
-                            ),
-                            center = LightTopBarCenter.Text(current.title),
+                        // No `+` here: this screen is already the new-task
+                        // flow, mid-way through creating one task. Offering a
+                        // second entry into capture is confusing (the title
+                        // just typed is not yet saved) rather than useful --
+                        // unlike every other screen, there is no case where
+                        // tapping + here does something a user actually wants.
+                        ScreenHeader(
+                            title = current.title,
+                            onBack = { goBack() },
                         )
                         LightScrollView(
                             modifier = Modifier

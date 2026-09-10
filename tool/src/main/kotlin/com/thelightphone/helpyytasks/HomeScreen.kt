@@ -1,8 +1,6 @@
 package com.thelightphone.helpyytasks
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -150,10 +148,26 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
                     .fillMaxSize()
                     .background(LightThemeTokens.colors.background),
             ) {
-                HomeHeader(
+                ScreenHeader(
+                    title = "TASKS",
                     onAdd = { navigateTo(::CaptureScreen) },
-                    onParkingLot = { navigateTo(::ParkingScreen) },
                     onSettings = { navigateTo(::SettingsScreen) },
+                    middleIcons = {
+                        HeaderIconSlot(
+                            onClick = { navigateTo(::ParkingScreen) },
+                            contentDescription = "Parking lot",
+                            modifier = Modifier.padding(end = 1.25f.gridUnitsAsDp()),
+                        ) {
+                            ParkingIcon()
+                        }
+                        HeaderIconSlot(
+                            onClick = { navigateTo(::DoneScreen) },
+                            contentDescription = "Done",
+                            modifier = Modifier.padding(end = 1.25f.gridUnitsAsDp()),
+                        ) {
+                            DoneTickIcon()
+                        }
+                    },
                 )
 
                 if (boardState.error is BoardError.Unauthorized) {
@@ -224,11 +238,6 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
     }
 }
 
-private const val HEADER_ICON_UNITS = 2f
-
-/** LightTopBar's own height, mirrored so Home's custom header lines up with it. */
-private const val TOPBAR_HEIGHT_UNITS = 3f
-
 // Reused by ParkingScreen, whose rows are styled identically to Home's.
 internal const val CONTROL_BOX_UNITS = 2f
 internal const val CONTROL_GLYPH_UNITS = 1.4f
@@ -238,48 +247,6 @@ internal const val CONTROL_GLYPH_UNITS = 1.4f
  * control aligned to the raw top sits high. This drops it to meet the glyph.
  */
 internal const val CONTROL_TOP_NUDGE_UNITS = 0.35f
-
-@Composable
-private fun HomeHeader(
-    onAdd: () -> Unit,
-    onParkingLot: () -> Unit,
-    onSettings: () -> Unit,
-) {
-    Row(
-        // Matches LightTopBar's own metrics so TASKS sits at the same size and
-        // height as PARKING LOT, SETTINGS and the rest: 3 grid units tall, 1 unit
-        // of horizontal padding, centre text at Fine. Home cannot use LightTopBar
-        // itself -- that has only leftButton/center/rightButton, and the header
-        // carries three icons plus a title.
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(TOPBAR_HEIGHT_UNITS.gridUnitsAsDp())
-            .padding(horizontal = 1f.gridUnitsAsDp()),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        LightText(
-            text = "TASKS",
-            variant = LightTextVariant.Fine,
-            modifier = Modifier.weight(1f),
-        )
-        PlusIcon(
-            modifier = Modifier
-                .lightClickable(onClick = onAdd)
-                .padding(end = 1f.gridUnitsAsDp()),
-        )
-        ParkingIcon(
-            modifier = Modifier
-                .lightClickable(onClick = onParkingLot)
-                .padding(end = 1f.gridUnitsAsDp()),
-        )
-        LightIcon(
-            icon = LightIcons.SETTINGS,
-            size = HEADER_ICON_UNITS,
-            contentDescription = "Settings",
-            modifier = Modifier.lightClickable(onClick = onSettings),
-        )
-    }
-}
 
 @Composable
 private fun SectionHeader(column: String) {
@@ -437,10 +404,12 @@ internal fun CenteredMessage(text: String) {
 }
 
 /**
- * The international parking symbol: a P in a box. LightIcons ships no car or
- * parking glyph, and a list icon read as "a bunch of lines" on the device.
+ * The international parking symbol: a P in a circle. LightIcons ships no car
+ * or parking glyph, and a list icon read as "a bunch of lines" on the device.
  * Drawn rather than shipped as a drawable so it takes the theme's content
- * colour and the LP3's own typeface without new resource plumbing.
+ * colour and the LP3's own typeface without new resource plumbing. Circled,
+ * not boxed, so its stroke matches PlusIcon's drawn technique rather than
+ * reading as a solid-bordered square next to the header's other round marks.
  */
 @Composable
 internal fun ParkingIcon(modifier: Modifier = Modifier) {
@@ -449,14 +418,23 @@ internal fun ParkingIcon(modifier: Modifier = Modifier) {
         modifier = modifier.size(HEADER_ICON_UNITS.gridUnitsAsDp()),
         contentAlignment = Alignment.Center,
     ) {
-        Box(
+        Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .border(width = 2.dp, color = colors.content),
-        )
+                .semantics { contentDescription = "Parking lot" },
+        ) {
+            val stroke = size.width * 0.085f
+            drawCircle(
+                color = colors.content,
+                radius = (size.minDimension - stroke) / 2,
+                style = Stroke(width = stroke),
+            )
+        }
+        // Superfine, not Detail: at HEADER_ICON_UNITS' smaller size Detail's
+        // "P" crowded the circle's stroke on the device.
         LightText(
             text = "P",
-            variant = LightTextVariant.Detail,
+            variant = LightTextVariant.Superfine,
         )
     }
 }

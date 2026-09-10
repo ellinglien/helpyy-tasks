@@ -73,13 +73,13 @@ class BoardClientTest {
         val body = """
             {"id":"a","title":"report","column":"asap","labels":[],
              "body":"notes here","nextAction":"pull box office","waitingOn":null,
-             "effort":null,"suggestedSubtasks":["one","two"],"parked":false,
-             "updatedAt":"2026-09-09T12:00:00.000Z"}
+             "effort":null,"suggestedSubtasks":[{"title":"one","status":"open"},{"title":"two"}],
+             "parked":false,"updatedAt":"2026-09-09T12:00:00.000Z"}
         """.trimIndent()
         val d = client(HttpStatusCode.OK, body).detail("a")
         assertEquals("notes here", d.body)
         assertEquals("pull box office", d.nextAction)
-        assertEquals(listOf("one", "two"), d.suggestedSubtasks)
+        assertEquals(listOf("one", "two"), d.suggestedSubtasks.map { it.title })
         assertEquals(false, d.parked)
     }
 
@@ -90,6 +90,24 @@ class BoardClientTest {
         assertEquals("", d.body)
         assertEquals(null, d.nextAction)
         assertEquals(emptyList(), d.suggestedSubtasks)
+    }
+
+    @Test
+    fun `detail tolerates unknown fields inside a subtask`() = runTest {
+        val body = """{"id":"a","title":"t","column":"go","labels":[],"parked":false,
+            "suggestedSubtasks":[{"title":"one","somethingNew":42}]}"""
+        val d = client(HttpStatusCode.OK, body).detail("a")
+        assertEquals(listOf("one"), d.suggestedSubtasks.map { it.title })
+    }
+
+    @Test
+    fun `detail surfaces a malformed subtask shape as Server rather than crashing`() = runTest {
+        val body = """{"id":"a","title":"t","column":"go","labels":[],"parked":false,
+            "suggestedSubtasks":[{"title":{"nested":"object, not a string"}}]}"""
+        val e = assertFailsWith<BoardError.Server> {
+            client(HttpStatusCode.OK, body).detail("a")
+        }
+        assertEquals(200, e.status)
     }
 
     @Test

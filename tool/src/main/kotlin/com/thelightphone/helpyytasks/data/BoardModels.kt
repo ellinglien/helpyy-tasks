@@ -25,9 +25,22 @@ data class PhoneTaskDetail(
     val nextAction: String? = null,
     val waitingOn: String? = null,
     val effort: String? = null,
-    val suggestedSubtasks: List<String> = emptyList(),
+    val suggestedSubtasks: List<SuggestedSubtask> = emptyList(),
     val parked: Boolean = false,
     val updatedAt: String? = null,
+)
+
+/**
+ * A suggested subtask as the board stores it. Only `title` is shown on the
+ * phone; the rest are carried so the shape does not break when the board's
+ * generator adds a field.
+ */
+@Serializable
+data class SuggestedSubtask(
+    val title: String = "",
+    val nextAction: String? = null,
+    val status: String? = null,
+    val source: String? = null,
 )
 
 @Serializable
