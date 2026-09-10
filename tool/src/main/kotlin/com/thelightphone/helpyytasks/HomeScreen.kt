@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -225,6 +226,9 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
 
 private const val HEADER_ICON_UNITS = 2f
 
+/** LightTopBar's own height, mirrored so Home's custom header lines up with it. */
+private const val TOPBAR_HEIGHT_UNITS = 3f
+
 // Reused by ParkingScreen, whose rows are styled identically to Home's.
 internal const val CONTROL_BOX_UNITS = 2f
 internal const val CONTROL_GLYPH_UNITS = 1.4f
@@ -242,14 +246,20 @@ private fun HomeHeader(
     onSettings: () -> Unit,
 ) {
     Row(
+        // Matches LightTopBar's own metrics so TASKS sits at the same size and
+        // height as PARKING LOT, SETTINGS and the rest: 3 grid units tall, 1 unit
+        // of horizontal padding, centre text at Fine. Home cannot use LightTopBar
+        // itself -- that has only leftButton/center/rightButton, and the header
+        // carries three icons plus a title.
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 1f.gridUnitsAsDp(), vertical = 0.75f.gridUnitsAsDp()),
+            .height(TOPBAR_HEIGHT_UNITS.gridUnitsAsDp())
+            .padding(horizontal = 1f.gridUnitsAsDp()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LightText(
             text = "TASKS",
-            variant = LightTextVariant.Subheading,
+            variant = LightTextVariant.Fine,
             modifier = Modifier.weight(1f),
         )
         PlusIcon(
