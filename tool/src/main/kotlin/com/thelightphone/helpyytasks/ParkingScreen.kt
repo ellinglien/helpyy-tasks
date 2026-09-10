@@ -162,7 +162,7 @@ private fun ParkedRow(
             .fillMaxWidth()
             .lightClickable(onClick = onTapRow)
             .padding(vertical = 0.5f.gridUnitsAsDp()),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         Column(
             modifier = Modifier

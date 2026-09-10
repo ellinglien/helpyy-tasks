@@ -229,6 +229,12 @@ private const val HEADER_ICON_UNITS = 2f
 internal const val CONTROL_BOX_UNITS = 2f
 internal const val CONTROL_GLYPH_UNITS = 1.4f
 
+/**
+ * Text renders below the top of its layout box by about half the leading, so a
+ * control aligned to the raw top sits high. This drops it to meet the glyph.
+ */
+internal const val CONTROL_TOP_NUDGE_UNITS = 0.35f
+
 @Composable
 private fun HomeHeader(
     onAdd: () -> Unit,
@@ -290,7 +296,9 @@ private fun TaskRow(
             .fillMaxWidth()
             .lightClickable(onClick = onTapRow)
             .padding(vertical = 0.5f.gridUnitsAsDp(), horizontal = 0f.gridUnitsAsDp()),
-        verticalAlignment = Alignment.CenterVertically,
+        // Top-aligned, not centred: on a two-line title, centred controls drift
+        // to the middle of the block and stop reading as belonging to the row.
+        verticalAlignment = Alignment.Top,
     ) {
         Column(
             modifier = Modifier
@@ -313,7 +321,11 @@ private fun TaskRow(
             enabled = controlsEnabled,
             contentDescription = "Park",
             onClick = { onTapControl(Control.Park) },
-            modifier = Modifier.padding(start = 1.5f.gridUnitsAsDp(), end = 1.25f.gridUnitsAsDp()),
+            modifier = Modifier.padding(
+                start = 1.5f.gridUnitsAsDp(),
+                end = 1.25f.gridUnitsAsDp(),
+                top = CONTROL_TOP_NUDGE_UNITS.gridUnitsAsDp(),
+            ),
         )
         DrawnControl(
             kind = ControlKind.Complete,
@@ -321,6 +333,7 @@ private fun TaskRow(
             enabled = controlsEnabled,
             contentDescription = "Complete",
             onClick = { onTapControl(Control.Complete) },
+            modifier = Modifier.padding(top = CONTROL_TOP_NUDGE_UNITS.gridUnitsAsDp()),
         )
     }
 }
