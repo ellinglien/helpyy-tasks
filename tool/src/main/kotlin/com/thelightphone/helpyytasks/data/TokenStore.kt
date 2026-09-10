@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks.data
+package com.thelightphone.helpyytasks.data
 
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey

@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
 import com.thelightphone.sdk.EntryPoint
 import com.thelightphone.sdk.LightEntryPoint

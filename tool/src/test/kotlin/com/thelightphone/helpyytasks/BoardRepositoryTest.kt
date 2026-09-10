@@ -1,10 +1,10 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
-import com.thelightphone.helpytasks.data.BoardError
-import com.thelightphone.helpytasks.data.BoardRepository
-import com.thelightphone.helpytasks.data.BoardSource
-import com.thelightphone.helpytasks.data.PhoneTask
-import com.thelightphone.helpytasks.data.PhoneTaskDetail
+import com.thelightphone.helpyytasks.data.BoardError
+import com.thelightphone.helpyytasks.data.BoardRepository
+import com.thelightphone.helpyytasks.data.BoardSource
+import com.thelightphone.helpyytasks.data.PhoneTask
+import com.thelightphone.helpyytasks.data.PhoneTaskDetail
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

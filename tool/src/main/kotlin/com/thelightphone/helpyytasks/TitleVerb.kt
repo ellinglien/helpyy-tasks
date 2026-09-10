@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
 /**
  * A task title split into its leading action verb and everything after it.

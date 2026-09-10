@@ -1,7 +1,7 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
-import com.thelightphone.helpytasks.data.InMemoryTokenStore
-import com.thelightphone.helpytasks.data.Settings
+import com.thelightphone.helpyytasks.data.InMemoryTokenStore
+import com.thelightphone.helpyytasks.data.Settings
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

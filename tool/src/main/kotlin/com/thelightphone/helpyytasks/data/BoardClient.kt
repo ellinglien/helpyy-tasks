@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks.data
+package com.thelightphone.helpyytasks.data
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

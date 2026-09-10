@@ -1,10 +1,10 @@
 [tool]
-id = "com.thelightphone.helpytasks"
-label = "Helpy Tasks"
+id = "com.thelightphone.helpyytasks"
+label = "Helpyy Tasks"
 versionCode = 1
 versionName = "0.1.0"
 permissions = ["android.permission.INTERNET"]
 capabilities = []
-# change if you run this on an LP3!
-# serverPackage = "com.lightos"
-serverPackage = "com.thelightphone.sdk.emulator"
+# This tool targets the LP3. Flip to the emulator value to run it in an AVD.
+# serverPackage = "com.thelightphone.sdk.emulator"
+serverPackage = "com.lightos"

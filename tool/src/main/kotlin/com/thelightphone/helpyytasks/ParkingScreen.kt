@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,10 +13,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewModelScope
-import com.thelightphone.helpytasks.data.BoardError
-import com.thelightphone.helpytasks.data.BoardRepository
-import com.thelightphone.helpytasks.data.BoardState
-import com.thelightphone.helpytasks.data.PhoneTask
+import com.thelightphone.helpyytasks.data.BoardError
+import com.thelightphone.helpyytasks.data.BoardRepository
+import com.thelightphone.helpyytasks.data.BoardState
+import com.thelightphone.helpyytasks.data.PhoneTask
 import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity

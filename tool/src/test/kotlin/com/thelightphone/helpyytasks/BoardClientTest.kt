@@ -1,7 +1,7 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
-import com.thelightphone.helpytasks.data.BoardClient
-import com.thelightphone.helpytasks.data.BoardError
+import com.thelightphone.helpyytasks.data.BoardClient
+import com.thelightphone.helpyytasks.data.BoardError
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType

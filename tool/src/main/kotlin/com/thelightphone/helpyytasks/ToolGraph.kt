@@ -1,9 +1,9 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
-import com.thelightphone.helpytasks.data.BoardClient
-import com.thelightphone.helpytasks.data.BoardRepository
-import com.thelightphone.helpytasks.data.DataStoreTokenStore
-import com.thelightphone.helpytasks.data.TokenStore
+import com.thelightphone.helpyytasks.data.BoardClient
+import com.thelightphone.helpyytasks.data.BoardRepository
+import com.thelightphone.helpyytasks.data.DataStoreTokenStore
+import com.thelightphone.helpyytasks.data.TokenStore
 import com.thelightphone.sdk.SealedLightContext
 import io.ktor.client.engine.okhttp.OkHttp
 

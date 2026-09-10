@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks.data
+package com.thelightphone.helpyytasks.data
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

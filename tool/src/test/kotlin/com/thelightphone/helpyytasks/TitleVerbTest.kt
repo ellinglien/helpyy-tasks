@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

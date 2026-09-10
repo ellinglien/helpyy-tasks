@@ -1,4 +1,4 @@
-package com.thelightphone.helpytasks
+package com.thelightphone.helpyytasks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewModelScope
-import com.thelightphone.helpytasks.data.BoardRepository
+import com.thelightphone.helpyytasks.data.BoardRepository
 import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
