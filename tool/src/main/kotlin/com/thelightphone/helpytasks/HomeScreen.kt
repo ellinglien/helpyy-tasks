@@ -15,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -138,9 +139,8 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
                     .background(LightThemeTokens.colors.background),
             ) {
                 HomeHeader(
-                    // Navigation targets don't exist yet (Task 8) — inert for now.
-                    onAdd = {},
-                    onParkingLot = {},
+                    onAdd = { navigateTo(::CaptureScreen) },
+                    onParkingLot = { navigateTo(::ParkingScreen) },
                     onSettings = { navigateTo(::SettingsScreen) },
                 )
 
@@ -185,7 +185,21 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
                                             onTapControl = { control ->
                                                 viewModel.tapControl(task.id, control)
                                             },
-                                            onTapRow = { viewModel.clearArmed() },
+                                            onTapRow = {
+                                                // A row tap while a control is armed disarms
+                                                // rather than navigating: arming is a half-
+                                                // finished gesture toward that control, and a
+                                                // stray tap should cancel it, not launch a
+                                                // screen behind its back. Only an unarmed row
+                                                // opens detail.
+                                                if (armed != null) {
+                                                    viewModel.clearArmed()
+                                                } else {
+                                                    navigateTo(screenFactory = { activity ->
+                                                        TaskDetailScreen(activity, task.id)
+                                                    })
+                                                }
+                                            },
                                         )
                                     }
                                 }
@@ -199,8 +213,10 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
 }
 
 private const val HEADER_ICON_UNITS = 2f
-private const val CONTROL_BOX_UNITS = 2.5f
-private const val CONTROL_GLYPH_UNITS = 1.4f
+
+// Reused by ParkingScreen, whose rows are styled identically to Home's.
+internal const val CONTROL_BOX_UNITS = 2.5f
+internal const val CONTROL_GLYPH_UNITS = 1.4f
 
 @Composable
 private fun HomeHeader(
@@ -278,7 +294,7 @@ private fun TaskRow(
                 .weight(1f)
                 .padding(end = 0.5f.gridUnitsAsDp()),
         ) {
-            RowTitle(task.title)
+            VerbBoldText(task.title, rowTitleStyle())
             if (meta != null) {
                 LightText(
                     text = meta,
@@ -306,8 +322,9 @@ private fun TaskRow(
     }
 }
 
+/** Reused by ParkingScreen for its pull-back caret. */
 @Composable
-private fun ControlIcon(
+internal fun ControlIcon(
     icon: LightIconConfiguration,
     armed: Boolean,
     enabled: Boolean,
@@ -336,10 +353,18 @@ private fun ControlIcon(
     }
 }
 
+/**
+ * A title with its leading action verb bolded, per `splitTitleVerb`
+ * (TitleVerb.kt). Shared by every screen that shows a task title — Home rows,
+ * Parking rows, and TaskDetailScreen's larger heading — so the verb-bold rule
+ * only lives in one place.
+ */
 @Composable
-private fun RowTitle(title: String) {
-    val style = rowTitleStyle()
-    val color = LightThemeTokens.colors.content
+internal fun VerbBoldText(
+    title: String,
+    style: TextStyle,
+    color: Color = LightThemeTokens.colors.content,
+) {
     val split = splitTitleVerb(title)
 
     if (split == null) {
@@ -359,8 +384,9 @@ private fun RowTitle(title: String) {
     }
 }
 
+/** The `paragraph` rung of the compact type scale, used for every task row. */
 @Composable
-private fun rowTitleStyle(): TextStyle {
+internal fun rowTitleStyle(): TextStyle {
     val base = LightThemeTokens.typography.paragraph
     return base.copy(
         fontSize = base.fontSize.value.designVerticalPxToSp(),
@@ -369,7 +395,7 @@ private fun rowTitleStyle(): TextStyle {
 }
 
 @Composable
-private fun CenteredMessage(text: String) {
+internal fun CenteredMessage(text: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
