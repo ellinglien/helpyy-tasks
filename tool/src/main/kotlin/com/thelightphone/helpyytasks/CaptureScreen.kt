@@ -17,13 +17,15 @@ import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.rememberKeyboardOptions
+import com.thelightphone.sdk.ui.LightBarButton
+import com.thelightphone.sdk.ui.LightIcons
 import com.thelightphone.sdk.ui.LightScrollView
-import com.thelightphone.sdk.ui.LightText
 import com.thelightphone.sdk.ui.LightTextInputEditor
-import com.thelightphone.sdk.ui.LightTextVariant
 import com.thelightphone.sdk.ui.LightTheme
 import com.thelightphone.sdk.ui.LightThemeController
 import com.thelightphone.sdk.ui.LightThemeTokens
+import com.thelightphone.sdk.ui.LightTopBar
+import com.thelightphone.sdk.ui.LightTopBarCenter
 import com.thelightphone.sdk.ui.gridUnitsAsDp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,6 +92,7 @@ class CaptureScreen(sealedActivity: SealedLightActivity) :
                         onBack = { goBack() },
                         keyboardOptionsFlow = keyboardOptionsFlow,
                         submitLabel = "NEXT",
+                        showBackButton = true,
                         singleLine = true,
                         initialCaps = true,
                         modifier = Modifier.background(LightThemeTokens.colors.background),
@@ -102,10 +105,12 @@ class CaptureScreen(sealedActivity: SealedLightActivity) :
                             .fillMaxSize()
                             .background(LightThemeTokens.colors.background),
                     ) {
-                        LightText(
-                            text = current.title,
-                            variant = LightTextVariant.Subheading,
-                            modifier = Modifier.padding(1f.gridUnitsAsDp()),
+                        LightTopBar(
+                            leftButton = LightBarButton.LightIcon(
+                                icon = LightIcons.BACK,
+                                onClick = { goBack() },
+                            ),
+                            center = LightTopBarCenter.Text(current.title),
                         )
                         LightScrollView(
                             modifier = Modifier

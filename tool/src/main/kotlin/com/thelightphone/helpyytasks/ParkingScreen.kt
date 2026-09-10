@@ -21,6 +21,7 @@ import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.SimpleLightScreen
+import com.thelightphone.sdk.ui.LightBarButton
 import com.thelightphone.sdk.ui.LightIcons
 import com.thelightphone.sdk.ui.LightScrollView
 import com.thelightphone.sdk.ui.LightText
@@ -28,6 +29,8 @@ import com.thelightphone.sdk.ui.LightTextVariant
 import com.thelightphone.sdk.ui.LightTheme
 import com.thelightphone.sdk.ui.LightThemeController
 import com.thelightphone.sdk.ui.LightThemeTokens
+import com.thelightphone.sdk.ui.LightTopBar
+import com.thelightphone.sdk.ui.LightTopBarCenter
 import com.thelightphone.sdk.ui.gridUnitsAsDp
 import com.thelightphone.sdk.ui.lightClickable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,7 +94,14 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
                     .fillMaxSize()
                     .background(LightThemeTokens.colors.background),
             ) {
-                ParkingHeader(count = boardState.parked.size)
+                LightTopBar(
+                    leftButton = LightBarButton.LightIcon(
+                        icon = LightIcons.BACK,
+                        onClick = { goBack() },
+                    ),
+                    center = LightTopBarCenter.Text("Parking lot"),
+                )
+                ParkedCountLine(count = boardState.parked.size)
 
                 if (boardState.error is BoardError.Unauthorized) {
                     CenteredMessage("Token rejected. Re-enter it in Settings.")
@@ -123,21 +133,18 @@ class ParkingScreen(sealedActivity: SealedLightActivity) :
 }
 
 @Composable
-private fun ParkingHeader(count: Int) {
-    Column(
+private fun ParkedCountLine(count: Int) {
+    LightText(
+        text = "$count PARKED",
+        variant = LightTextVariant.Superfine,
+        lighten = true,
         modifier = Modifier.padding(
-            horizontal = 1f.gridUnitsAsDp(),
-            vertical = 0.75f.gridUnitsAsDp(),
+            start = 1f.gridUnitsAsDp(),
+            end = 1f.gridUnitsAsDp(),
+            top = 0.5f.gridUnitsAsDp(),
+            bottom = 0.25f.gridUnitsAsDp(),
         ),
-    ) {
-        LightText(text = "Parking lot", variant = LightTextVariant.Subheading)
-        LightText(
-            text = "$count PARKED",
-            variant = LightTextVariant.Superfine,
-            lighten = true,
-            modifier = Modifier.padding(top = 0.25f.gridUnitsAsDp()),
-        )
-    }
+    )
 }
 
 @Composable

@@ -19,6 +19,8 @@ import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.SimpleLightScreen
 import com.thelightphone.sdk.rememberKeyboardOptions
+import com.thelightphone.sdk.ui.LightBarButton
+import com.thelightphone.sdk.ui.LightIcons
 import com.thelightphone.sdk.ui.LightText
 import com.thelightphone.sdk.ui.LightTextField
 import com.thelightphone.sdk.ui.LightTextInputEditor
@@ -26,6 +28,8 @@ import com.thelightphone.sdk.ui.LightTextVariant
 import com.thelightphone.sdk.ui.LightTheme
 import com.thelightphone.sdk.ui.LightThemeController
 import com.thelightphone.sdk.ui.LightThemeTokens
+import com.thelightphone.sdk.ui.LightTopBar
+import com.thelightphone.sdk.ui.LightTopBarCenter
 import com.thelightphone.sdk.ui.gridUnitsAsDp
 import com.thelightphone.sdk.ui.lightClickable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,6 +129,7 @@ class SettingsScreen(sealedActivity: SealedLightActivity) :
                         onBack = { viewModel.cancelEdit() },
                         keyboardOptionsFlow = keyboardOptionsFlow,
                         submitLabel = "SAVE",
+                        showBackButton = true,
                         singleLine = true,
                     )
                 }
@@ -140,6 +145,7 @@ class SettingsScreen(sealedActivity: SealedLightActivity) :
                         onBack = { viewModel.cancelEdit() },
                         keyboardOptionsFlow = keyboardOptionsFlow,
                         submitLabel = "SAVE",
+                        showBackButton = true,
                         singleLine = true,
                     )
                 }
@@ -148,39 +154,44 @@ class SettingsScreen(sealedActivity: SealedLightActivity) :
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(LightThemeTokens.colors.background)
-                            .padding(1f.gridUnitsAsDp()),
+                            .background(LightThemeTokens.colors.background),
                     ) {
-                        LightText(
-                            text = "Settings",
-                            variant = LightTextVariant.Subheading,
-                            modifier = Modifier.padding(bottom = 1f.gridUnitsAsDp()),
+                        LightTopBar(
+                            leftButton = LightBarButton.LightIcon(
+                                icon = LightIcons.BACK,
+                                onClick = { goBack() },
+                            ),
+                            center = LightTopBarCenter.Text("Settings"),
                         )
 
-                        LightTextField(
-                            label = "Server",
-                            value = state.baseUrl,
-                            placeholder = DEFAULT_BASE_URL,
-                            onClick = { viewModel.beginEditBaseUrl() },
-                            modifier = Modifier.padding(bottom = 1f.gridUnitsAsDp()),
-                        )
+                        Column(
+                            modifier = Modifier.padding(1f.gridUnitsAsDp()),
+                        ) {
+                            LightTextField(
+                                label = "Server",
+                                value = state.baseUrl,
+                                placeholder = DEFAULT_BASE_URL,
+                                onClick = { viewModel.beginEditBaseUrl() },
+                                modifier = Modifier.padding(bottom = 1f.gridUnitsAsDp()),
+                            )
 
-                        LightTextField(
-                            label = if (state.hasToken) "Token (set — tap to replace)" else "Token",
-                            value = "",
-                            placeholder = "Not set",
-                            onClick = { viewModel.beginEditToken() },
-                            modifier = Modifier.padding(bottom = 1f.gridUnitsAsDp()),
-                        )
+                            LightTextField(
+                                label = if (state.hasToken) "Token (set — tap to replace)" else "Token",
+                                value = "",
+                                placeholder = "Not set",
+                                onClick = { viewModel.beginEditToken() },
+                                modifier = Modifier.padding(bottom = 1f.gridUnitsAsDp()),
+                            )
 
-                        LightText(
-                            text = "SAVE",
-                            variant = LightTextVariant.Copy,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .lightClickable { viewModel.save { goBack() } }
-                                .padding(top = 1f.gridUnitsAsDp()),
-                        )
+                            LightText(
+                                text = "SAVE",
+                                variant = LightTextVariant.Copy,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .lightClickable { viewModel.save { goBack() } }
+                                    .padding(top = 1f.gridUnitsAsDp()),
+                            )
+                        }
                     }
                 }
             }
